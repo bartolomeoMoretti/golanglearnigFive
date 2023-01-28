@@ -1,8 +1,18 @@
 package main
 
 import (
-    "flag"
+    "golanglearningFive/cfg/s"
+    tgClient "golanglearningFive/clients/telegram"
+    eventConsumer "golanglearningFive/consumer/event-consumer"
+    "golanglearningFive/events/telegram"
+    "golanglearningFive/storage/files"
     "log"
+)
+
+const (
+    tgBotHost   = "api.telegram.org"
+    storagePath = "storage/users-files"
+    batchSize = 100
 )
 
 func main() {
@@ -14,7 +24,20 @@ func main() {
     // tgClient необходим для общения с api ТГ
     // tgClient = telegram.New(token)
 
-    // fetcher направляет в api ТГ запрос на наличие новых событий и затем их получение от ТГ
+    eventsProcessor := telegram.New(
+        tgClient.New(tgBotHost, t),
+        files.New(storagePath),
+    )
+
+    log.Print("server has been started")
+
+    consumer := eventConsumer.New(eventsProcessor,eventsProcessor,batchSize)
+
+    if err := consumer.Start();err!=nil{
+        log.Fatal("server was stopped", err)
+    }
+
+    // fetcher направляет в api ТГ запрос на наличие новых событий и затем отвечает за их получение от ТГ
     // fetcher = fetcher.New()
 
     // processor после обработки будет отправлять нам новые сообщения
@@ -25,17 +48,17 @@ func main() {
 }
 
 func mustToken() string {
-    token := flag.String(
+    token := s.T /*flag.String(
 		"tg-token",
 		"",
 		"token for access",
 	)
     
-    flag.Parse()
+    flag.Parse()*/
 
-    if *token == "" {
+    /*if *token == "" {
         log.Fatal("token is empty")
-    }
+    }*/
 
-    return *token
+    return token
 }
