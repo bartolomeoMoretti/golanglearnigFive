@@ -6,7 +6,7 @@ import (
 	"golanglearningFive/events"
 	"golanglearningFive/lib/e"
 	"golanglearningFive/storage"
-    "golanglearningFive/storage/files"
+	"golanglearningFive/storage/files"
 )
 
 type Processor struct {
@@ -23,6 +23,7 @@ var (
 type Meta struct {
 	ChatID   int
 	Username string
+	UserID   int64
 }
 
 func New(client *telegram.Client, storage files.Storage) *Processor {
@@ -57,7 +58,7 @@ func (p *Processor) Process(event events.Event) error {
 	switch event.Type {
 	case events.Message:
 		return p.processMessage(event)
-        //добавить новый case если нужен другой метод, с котором раотает процессор
+		//добавить новый case если нужен другой метод, с котором раотает процессор
 	default:
 		return e.Wrap("can't process message", ErrUnknownEventType)
 	}
@@ -69,7 +70,7 @@ func (p *Processor) processMessage(event events.Event) error {
 		return e.Wrap("can't process message", err)
 	}
 
-	if err := p.doCmd(event.Text, meta.ChatID, meta.Username); err != nil {
+	if err := p.doCmd(event.Text, meta.ChatID, meta.Username, meta.UserID); err != nil {
 		return e.Wrap("can't process message", err)
 	}
 
@@ -95,8 +96,9 @@ func event(upd telegram.Update) events.Event {
 
 	if updType == events.Message {
 		res.Meta = Meta{
-			ChatID:    upd.Message.Chat.ID,
-			Username:  upd.Message.From.Username,
+			ChatID:   upd.Message.Chat.ID,
+			Username: upd.Message.From.Username,
+			UserID:   upd.Message.From.UserID,
 			//DateSaved: upd.Message.DateSaved,
 		}
 	}

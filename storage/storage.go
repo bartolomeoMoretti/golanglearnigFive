@@ -6,11 +6,12 @@ import (
     "fmt"
     "golanglearningFive/lib/e"
     "io"
+    "strconv"
 )
 
 type Storage interface {
 	Save(p *Page) error
-	PickRandom(userName string) (*Page, error)
+	PickRandom(userId int64) (*Page, error)
 	Remove(p *Page) error
 	IsExists(p *Page) (bool, error)
 }
@@ -20,6 +21,7 @@ var ErrNoSavedPages = errors.New("no saved pages")
 type Page struct {
 	URL      string
 	UserName string
+    UserId int64
 }
 
 func (p Page) Hash() (string, error) {
@@ -30,6 +32,10 @@ func (p Page) Hash() (string, error) {
     }
 
     if _, err := io.WriteString(h, p.UserName); err != nil {
+        return "", e.Wrap("can't calculate hash", err)
+    }
+
+    if _, err := io.WriteString(h, strconv.Itoa(int(p.UserId))); err != nil {
         return "", e.Wrap("can't calculate hash", err)
     }
 

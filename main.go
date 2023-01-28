@@ -24,11 +24,20 @@ func main() {
     // tgClient необходим для общения с api ТГ
     // tgClient = telegram.New(token)
 
+    // fetcher направляет в api ТГ запрос на наличие новых событий и затем отвечает за их получение от ТГ
+    // fetcher = fetcher.New()
+
+    // processor после обработки будет отправлять нам новые сообщения
+    // processor = processor.New()
+    
     eventsProcessor := telegram.New(
         tgClient.New(tgBotHost, t),
         files.New(storagePath),
     )
 
+
+    // consumer - получает события при помощи fetcher и обрабатывает при помощи processor
+	// consumer.Start(fetcher, processor)
     log.Print("server has been started")
 
     consumer := eventConsumer.New(eventsProcessor,eventsProcessor,batchSize)
@@ -37,14 +46,6 @@ func main() {
         log.Fatal("server was stopped", err)
     }
 
-    // fetcher направляет в api ТГ запрос на наличие новых событий и затем отвечает за их получение от ТГ
-    // fetcher = fetcher.New()
-
-    // processor после обработки будет отправлять нам новые сообщения
-    // processor = processor.New()
-
-    // consumer - получает события (при помощи fetcher и обрабатывает пр помощи processor)
-	// consumer.Start(fetcher, processor)
 }
 
 func mustToken() string {

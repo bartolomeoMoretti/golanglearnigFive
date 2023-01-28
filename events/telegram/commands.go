@@ -15,18 +15,18 @@ const (
 	StartCmd = "/start"
 )
 
-func (p *Processor) doCmd(text string, chatID int, username string) error {
-	text = strings.TrimSpace(text)
+func (p *Processor) doCmd(text string, chatID int, username string, userID int64) error {
+	text = strings.Replace(text, " ", "_", -1) //TrimSpace(text)
 
-	log.Printf("got new command '%s' from '%s'", text, username)
+	log.Printf("got new command '%s' from '%s'/'%d'", text, username, userID)
 
 	if isAddCmd(text) {
-		return p.savePage(chatID, text, username)
+		return p.savePage(chatID, text, username, userID)
 	}
 
 	switch text {
 	case RndCmd:
-		return p.sendRandom(chatID, username)
+		return p.sendRandom(chatID, userID)
 	case HelpCmd:
 		return p.sendHelp(chatID)
 	case StartCmd:
@@ -36,7 +36,7 @@ func (p *Processor) doCmd(text string, chatID int, username string) error {
 	}
 }
 
-func (p *Processor) savePage(chatID int, pageURL string, username string) (err error) {
+func (p *Processor) savePage(chatID int, pageURL string, username string, userID int64) (err error) {
 	defer func() { err = e.WrapIfErr("can't do command: save page", err) }()
 
 	// tm := time.Unix(datesaved,0)
@@ -52,6 +52,7 @@ func (p *Processor) savePage(chatID int, pageURL string, username string) (err e
 	page := &storage.Page{
 		URL:      pageURL,
 		UserName: username,
+		UserId:   userID,
 		//DateCreated: fmt.Sprint(datesaved),
 		//DateSaved: fmt.Sprint(timeT),
 	}
@@ -75,10 +76,10 @@ func (p *Processor) savePage(chatID int, pageURL string, username string) (err e
 	return nil
 }
 
-func (p *Processor) sendRandom(chatID int, username string) (err error) {
+func (p *Processor) sendRandom(chatID int, userId int64) (err error) {
 	defer func() { err = e.WrapIfErr("can't do command: can't send random", err) }()
 
-	page, err := p.storage.PickRandom(username)
+	page, err := p.storage.PickRandom(userId)
 	if err != nil && !errors.Is(err, storage.ErrNoSavedPages) {
 		return err
 	}
