@@ -1,7 +1,7 @@
 package storage
 
 import (
-    "crypto/sha1"
+	"crypto/sha1"
 	"errors"
 	"fmt"
 	"golanglearningFive/lib/e"

@@ -86,12 +86,12 @@ func (p *Processor) savePage(chatID int, pageURL string, username string, firstN
 	if err := p.tg.SendMessage(
 		chatID,
 		fmt.Sprint(
-            msgSaved4,
+			msgSaved4,
 			nameOrNick,
 			msgSaved,
-            msgSaved2,
+			msgSaved2,
 			pageURL,
-            msgSaved22,
+			msgSaved22,
 			msgSaved3,
 			timeT,
 		),
