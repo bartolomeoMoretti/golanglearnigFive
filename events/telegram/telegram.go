@@ -1,12 +1,12 @@
 package telegram
 
 import (
-    "errors"
-    "golanglearningFive/clients/telegram"
-    "golanglearningFive/events"
-    "golanglearningFive/lib/e"
-    "golanglearningFive/storage"
-    "golanglearningFive/storage/files"
+	"errors"
+	"golanglearningFive/clients/telegram"
+	"golanglearningFive/events"
+	"golanglearningFive/lib/e"
+	"golanglearningFive/storage"
+	"golanglearningFive/storage/files"
 )
 
 type Processor struct {
@@ -21,10 +21,12 @@ var (
 )
 
 type Meta struct {
-	ChatID   int
-	Username string
-	UserID   int64
-    DateSent int
+	ChatID    int
+	Username  string
+	UserID    int64
+	DateSent  int
+	FirstName string
+	LastName  string
 }
 
 func New(client *telegram.Client, storage files.Storage) *Processor {
@@ -71,7 +73,7 @@ func (p *Processor) processMessage(event events.Event) error {
 		return e.Wrap("can't process message", err)
 	}
 
-	if err := p.doCmd(event.Text, meta.ChatID, meta.Username, meta.UserID, meta.DateSent); err != nil {
+	if err := p.doCmd(event.Text, meta.ChatID, meta.Username, meta.FirstName, meta.LastName, meta.UserID, meta.DateSent); err != nil {
 		return e.Wrap("can't process message", err)
 	}
 
@@ -97,10 +99,12 @@ func event(upd telegram.Update) events.Event {
 
 	if updType == events.Message {
 		res.Meta = Meta{
-			ChatID:   upd.Message.Chat.ID,
-			Username: upd.Message.From.Username,
-			UserID:   upd.Message.From.UserID,
-			DateSent: upd.Message.DateSent,
+			ChatID:    upd.Message.Chat.ID,
+			Username:  upd.Message.From.Username,
+			UserID:    upd.Message.From.UserID,
+			FirstName: upd.Message.From.FirstName,
+			LastName:  upd.Message.From.LastName,
+			DateSent:  upd.Message.DateSent,
 		}
 	}
 

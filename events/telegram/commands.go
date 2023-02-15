@@ -7,7 +7,7 @@ import (
 	"golanglearningFive/storage"
 	"log"
 	"strings"
-    "time"
+	"time"
 )
 
 const (
@@ -16,15 +16,15 @@ const (
 	StartCmd = "/start"
 )
 
-func (p *Processor) doCmd(text string, chatID int, username string, userID int64, dateSent int) error {
+func (p *Processor) doCmd(text string, chatID int, username string, firstName string, lastName string, userID int64, dateSent int) error {
 	text = strings.Replace(text, " ", "_", -1) //TrimSpace(text)
 
-    timeT := time.Unix(int64(dateSent), 0)
+	timeT := time.Unix(int64(dateSent), 0)
 
-    log.Printf("got new command '%s' from user '%s'(id:'%d') at '%s'", text, username, userID, timeT)
+	log.Printf("got new command '%s' from user '%s'(id:'%d') at '%s'", text, username, userID, timeT)
 
 	if isAddCmd(text) {
-        return p.savePage(chatID, text, username, userID, dateSent)
+		return p.savePage(chatID, text, username, firstName, lastName, userID, dateSent)
 	}
 
 	switch text {
@@ -35,11 +35,11 @@ func (p *Processor) doCmd(text string, chatID int, username string, userID int64
 	case StartCmd:
 		return p.sendHello(chatID)
 	default:
-        return p.tg.SendMessage(chatID, msgUnknownCommand)
+		return p.tg.SendMessage(chatID, msgUnknownCommand)
 	}
 }
 
-func (p *Processor) savePage(chatID int, pageURL string, username string, userID int64, dateSent int) (err error) {
+func (p *Processor) savePage(chatID int, pageURL string, username string, firstName string, lastName string, userID int64, dateSent int) (err error) {
 	defer func() { err = e.WrapIfErr("can't do command: save page", err) }()
 
 	// tm := time.Unix(datesaved,0)
@@ -50,14 +50,16 @@ func (p *Processor) savePage(chatID int, pageURL string, username string, userID
 	//tNow := time.Now()
 	//tUnix := tNow.Unix()
 	//timeT := time.Unix(tUnix, 0)
-    //timeT := time.Unix(int64(dateSent), 0)
-    timeT := time.Unix(int64(dateSent), 0)
+	//timeT := time.Unix(int64(dateSent), 0)
+	timeT := time.Unix(int64(dateSent), 0)
 
 	page := &storage.Page{
-		URL:      pageURL,
-		UserName: username,
-		UserId:   userID,
-        DateSent: fmt.Sprint(timeT),
+		URL:       pageURL,
+		UserName:  username,
+		UserId:    userID,
+		DateSent:  fmt.Sprint(timeT),
+		FirstName: firstName,
+		LastName:  lastName,
 		//DateSaved: fmt.Sprint(timeT),
 	}
 
@@ -66,14 +68,34 @@ func (p *Processor) savePage(chatID int, pageURL string, username string, userID
 		return err
 	}
 	if isExists {
-        return p.tg.SendMessage(chatID, msgAlreadyExists)
+		return p.tg.SendMessage(chatID, msgAlreadyExists)
 	}
 
 	if err := p.storage.Save(page); err != nil {
 		return err
 	}
 
-    if err := p.tg.SendMessage(chatID, fmt.Sprint(msgSaved, msgSaved2, pageURL, msgSaved3, "_time_")); err != nil {
+	var nameOrNick string
+
+	if username != "" {
+		nameOrNick = username
+	} else {
+		nameOrNick = firstName + " " + lastName
+	}
+
+	if err := p.tg.SendMessage(
+		chatID,
+		fmt.Sprint(
+            msgSaved4,
+			nameOrNick,
+			msgSaved,
+            msgSaved2,
+			pageURL,
+            msgSaved22,
+			msgSaved3,
+			timeT,
+		),
+	); err != nil {
 		return err
 	}
 
@@ -91,7 +113,7 @@ func (p *Processor) sendRandom(chatID int, userId int64) (err error) {
 		return p.tg.SendMessage(chatID, msgNoSavedPages)
 	}
 
-    if err := p.tg.SendMessage(chatID, page.URL); err != nil { //to-do: haven't username - who will get message in Public-group?
+	if err := p.tg.SendMessage(chatID, page.URL); err != nil { //to-do: haven't username - who will get message in Public-group?
 		return err
 	} //can be given more than once
 
@@ -110,7 +132,7 @@ func (p *Processor) sendHelp(chatID int) error {
 }
 
 func (p *Processor) sendHello(chatID int) error {
-    return p.tg.SendMessage(chatID, msgHello)
+	return p.tg.SendMessage(chatID, msgHello)
 }
 
 func isAddCmd(text string) bool {

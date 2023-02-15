@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"crypto/sha1"
+    "crypto/sha1"
 	"errors"
 	"fmt"
 	"golanglearningFive/lib/e"
@@ -19,10 +19,12 @@ type Storage interface {
 var ErrNoSavedPages = errors.New("no saved pages")
 
 type Page struct {
-	URL      string
-	UserName string
-	UserId   int64
-	DateSent string
+	URL       string
+	UserName  string
+	UserId    int64
+	DateSent  string
+	FirstName string
+	LastName  string
 }
 
 func (p Page) Hash() (string, error) {
