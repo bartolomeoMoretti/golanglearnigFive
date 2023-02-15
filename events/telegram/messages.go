@@ -14,5 +14,6 @@ const (
     msgNoSavedPages   = "You have no saved pages 🙊"
     msgSaved          = "👌 Saved URL is:\n"
     msgSaved2          = "🌐 "
+    msgSaved3          = " at "
     msgAlreadyExists  = "You have already have this page in your list 🤗"
 )
